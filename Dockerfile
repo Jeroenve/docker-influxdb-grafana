@@ -1,8 +1,18 @@
-FROM debian:stretch-slim
+FROM debian:buster-20210208-slim
 LABEL maintainer="Phil Hawthorne <me@philhawthorne.com>"
 
 ENV DEBIAN_FRONTEND noninteractive
 ENV LANG C.UTF-8
+ENV ARCH=amd64
+#ARCH= && dpkgArch="$(dpkg --print-architecture)" && \
+#    case "${dpkgArch##*-}" in \
+#      amd64) ARCH='amd64';; \
+#      arm64) ARCH='arm64';; \
+#      armhf) ARCH='armhf';; \
+#      armel) ARCH='armel';; \
+#      *)     echo "Unsupported architecture: ${dpkgArch}"; exit 1;; \
+#    esac \
+#    && 
 
 # Default versions
 ENV INFLUXDB_VERSION=1.8.2
@@ -18,19 +28,9 @@ COPY system/99fixbadproxy /etc/apt/apt.conf.d/99fixbadproxy
 WORKDIR /root
 
 # Clear previous sources
-RUN ARCH= && dpkgArch="$(dpkg --print-architecture)" && \
-    case "${dpkgArch##*-}" in \
-      amd64) ARCH='amd64';; \
-      arm64) ARCH='arm64';; \
-      armhf) ARCH='armhf';; \
-      armel) ARCH='armel';; \
-      *)     echo "Unsupported architecture: ${dpkgArch}"; exit 1;; \
-    esac && \
-    rm /var/lib/apt/lists/* -vf \
-    # Base dependencies
-    && apt-get -y update \
-    && apt-get -y dist-upgrade \
-    && apt-get -y --force-yes install \
+RUN apt-get update -q \
+    && apt-get install -qy \
+        apt-transport-https \
         apt-utils \
         ca-certificates \
         curl \
@@ -42,24 +42,83 @@ RUN ARCH= && dpkgArch="$(dpkg --print-architecture)" && \
         supervisor \
         wget \
         gnupg \
-    && curl -sL https://deb.nodesource.com/setup_10.x | bash - \
-    && apt-get install -y nodejs \
-    && mkdir -p /var/log/supervisor \
-    && rm -rf .profile \
-    # Install InfluxDB
-    && wget --no-verbose https://dl.influxdata.com/influxdb/releases/influxdb_${INFLUXDB_VERSION}_${ARCH}.deb \
+    && curl \
+        --silent \
+        --location \
+        https://deb.nodesource.com/setup_10.x | bash - \
+    && apt-get install -y \
+        nodejs \
+    && mkdir \
+        --parents \
+        /var/log/supervisor \
+    && rm \
+        --recursive \
+        --force \
+        .profile \
+# Cleanup
+    && echo "Cleanup" \
+    && apt-get \
+        -qq \
+        clean \
+    && rm \
+        --force \
+        --recursive \
+        /var/lib/apt/lists/* \
+        /tmp/* \
+        /var/tmp/*
+
+# Install InfluxDB
+RUN wget \
+    --no-verbose \
+    https://dl.influxdata.com/influxdb/releases/influxdb_${INFLUXDB_VERSION}_${ARCH}.deb \
     && dpkg -i influxdb_${INFLUXDB_VERSION}_${ARCH}.deb \
     && rm influxdb_${INFLUXDB_VERSION}_${ARCH}.deb \
-    # Install Chronograf
-    && wget https://dl.influxdata.com/chronograf/releases/chronograf_${CHRONOGRAF_VERSION}_${ARCH}.deb \
+# Cleanup
+    && echo "Cleanup" \
+    && apt-get \
+        -qq \
+        clean \
+    && rm \
+        --force \
+        --recursive \
+        /var/lib/apt/lists/* \
+        /tmp/* \
+        /var/tmp/*
+
+# Install Chronograf
+RUN wget \
+    --no-verbose \
+    https://dl.influxdata.com/chronograf/releases/chronograf_${CHRONOGRAF_VERSION}_${ARCH}.deb \
     && dpkg -i chronograf_${CHRONOGRAF_VERSION}_${ARCH}.deb && rm chronograf_${CHRONOGRAF_VERSION}_${ARCH}.deb \
-    # Install Grafana
-    && wget https://dl.grafana.com/oss/release/grafana_${GRAFANA_VERSION}_${ARCH}.deb \
+# Cleanup
+    && echo "Cleanup" \
+    && apt-get \
+        -qq \
+        clean \
+    && rm \
+        --force \
+        --recursive \
+        /var/lib/apt/lists/* \
+        /tmp/* \
+        /var/tmp/*
+
+# Install Grafana
+RUN wget \
+    --no-verbose \
+    https://dl.grafana.com/oss/release/grafana_${GRAFANA_VERSION}_${ARCH}.deb \
     && dpkg -i grafana_${GRAFANA_VERSION}_${ARCH}.deb \
     && rm grafana_${GRAFANA_VERSION}_${ARCH}.deb \
-    # Cleanup
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
+# Cleanup
+    && echo "Cleanup" \
+    && apt-get \
+        -qq \
+        clean \
+    && rm \
+        --force \
+        --recursive \
+        /var/lib/apt/lists/* \
+        /tmp/* \
+        /var/tmp/*
 
 # Configure Supervisord and base env
 COPY supervisord/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
