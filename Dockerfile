@@ -3,7 +3,8 @@ LABEL maintainer="Phil Hawthorne <me@philhawthorne.com>"
 
 ENV DEBIAN_FRONTEND noninteractive
 ENV LANG C.UTF-8
-ENV ARCH=amd64
+
+ARG ARCH
 #ARCH= && dpkgArch="$(dpkg --print-architecture)" && \
 #    case "${dpkgArch##*-}" in \
 #      amd64) ARCH='amd64';; \
@@ -15,9 +16,9 @@ ENV ARCH=amd64
 #    && 
 
 # Default versions
-ENV INFLUXDB_VERSION=1.8.2
-ENV CHRONOGRAF_VERSION=1.8.6
-ENV GRAFANA_VERSION=7.2.0
+ENV INFLUXDB_VERSION=1.8.4
+ENV CHRONOGRAF_VERSION=1.8.10
+ENV GRAFANA_VERSION=7.4.1
 
 # Grafana database type
 ENV GF_DATABASE_TYPE=sqlite3
@@ -29,19 +30,22 @@ WORKDIR /root
 
 # Clear previous sources
 RUN apt-get update -q \
-    && apt-get install -qy \
+    && apt-get install -qy --no-install-recommends \
         apt-transport-https \
         apt-utils \
-        ca-certificates \
+        ca-certificates
+RUN apt-get update -q \
+    && apt-get install -qy --no-install-recommends \
+        adduser \
         curl \
         git \
+        gnupg \
         htop \
-        libfontconfig \
+        libfontconfig1 \
         nano \
         net-tools \
         supervisor \
         wget \
-        gnupg \
     && curl \
         --silent \
         --location \
