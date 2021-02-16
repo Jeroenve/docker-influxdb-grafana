@@ -5,20 +5,9 @@ ENV DEBIAN_FRONTEND noninteractive
 ENV LANG C.UTF-8
 
 ARG ARCH
-#ARCH= && dpkgArch="$(dpkg --print-architecture)" && \
-#    case "${dpkgArch##*-}" in \
-#      amd64) ARCH='amd64';; \
-#      arm64) ARCH='arm64';; \
-#      armhf) ARCH='armhf';; \
-#      armel) ARCH='armel';; \
-#      *)     echo "Unsupported architecture: ${dpkgArch}"; exit 1;; \
-#    esac \
-#    && 
-
-# Default versions
-ENV INFLUXDB_VERSION=1.8.4
-ENV CHRONOGRAF_VERSION=1.8.10
-ENV GRAFANA_VERSION=7.4.1
+ARG INFLUXDB_VERSION
+ARG CHRONOGRAF_VERSION
+ARG GRAFANA_VERSION
 
 # Grafana database type
 ENV GF_DATABASE_TYPE=sqlite3
@@ -33,7 +22,8 @@ RUN apt-get update -q \
     && apt-get install -qy --no-install-recommends \
         apt-transport-https \
         apt-utils \
-        ca-certificates
+        ca-certificates \
+        lsb-release
 RUN apt-get update -q \
     && apt-get install -qy --no-install-recommends \
         adduser \
@@ -72,11 +62,10 @@ RUN apt-get update -q \
         /var/tmp/*
 
 # Install InfluxDB
-RUN wget \
-    --no-verbose \
-    https://dl.influxdata.com/influxdb/releases/influxdb_${INFLUXDB_VERSION}_${ARCH}.deb \
+COPY influxdb_${INFLUXDB_VERSION}_${ARCH}.deb /tmp
+
+RUN cd /tmp \
     && dpkg -i influxdb_${INFLUXDB_VERSION}_${ARCH}.deb \
-    && rm influxdb_${INFLUXDB_VERSION}_${ARCH}.deb \
 # Cleanup
     && echo "Cleanup" \
     && apt-get \
@@ -90,9 +79,9 @@ RUN wget \
         /var/tmp/*
 
 # Install Chronograf
-RUN wget \
-    --no-verbose \
-    https://dl.influxdata.com/chronograf/releases/chronograf_${CHRONOGRAF_VERSION}_${ARCH}.deb \
+COPY chronograf_${CHRONOGRAF_VERSION}_${ARCH}.deb /tmp
+
+RUN cd /tmp \
     && dpkg -i chronograf_${CHRONOGRAF_VERSION}_${ARCH}.deb && rm chronograf_${CHRONOGRAF_VERSION}_${ARCH}.deb \
 # Cleanup
     && echo "Cleanup" \
@@ -107,11 +96,9 @@ RUN wget \
         /var/tmp/*
 
 # Install Grafana
-RUN wget \
-    --no-verbose \
-    https://dl.grafana.com/oss/release/grafana_${GRAFANA_VERSION}_${ARCH}.deb \
+COPY grafana_${GRAFANA_VERSION}_${ARCH}.deb /tmp
+RUN cd /tmp \
     && dpkg -i grafana_${GRAFANA_VERSION}_${ARCH}.deb \
-    && rm grafana_${GRAFANA_VERSION}_${ARCH}.deb \
 # Cleanup
     && echo "Cleanup" \
     && apt-get \
