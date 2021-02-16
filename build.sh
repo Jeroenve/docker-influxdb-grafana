@@ -13,17 +13,17 @@ GRAFANA_VERSION=7.4.1
 #------------------------------------------------------------------------------
 # Download the influxDB, chronograf and Grafana
 #------------------------------------------------------------------------------
-# wget \
-#     --no-verbose \
-#     https://dl.influxdata.com/influxdb/releases/influxdb_${INFLUXDB_VERSION}_${ARCH}.deb
+wget \
+    --no-verbose \
+    https://dl.influxdata.com/influxdb/releases/influxdb_${INFLUXDB_VERSION}_${ARCH}.deb
 
-# wget \
-#     --no-verbose \
-#     https://dl.influxdata.com/chronograf/releases/chronograf_${CHRONOGRAF_VERSION}_${ARCH}.deb
+wget \
+    --no-verbose \
+    https://dl.influxdata.com/chronograf/releases/chronograf_${CHRONOGRAF_VERSION}_${ARCH}.deb
 
-# wget \
-#     --no-verbose \
-#     https://dl.grafana.com/oss/release/grafana_${GRAFANA_VERSION}_${ARCH}.deb
+wget \
+    --no-verbose \
+    https://dl.grafana.com/oss/release/grafana_${GRAFANA_VERSION}_${ARCH}.deb
 
 #------------------------------------------------------------------------------
 # Build the docker image
