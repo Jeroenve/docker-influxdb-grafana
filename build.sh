@@ -8,7 +8,7 @@ set -Eeuo pipefail
 ARCH=amd64
 INFLUXDB_VERSION=1.8.4
 CHRONOGRAF_VERSION=1.8.10
-GRAFANA_VERSION=7.4.1
+GRAFANA_VERSION=7.4.5
 
 #------------------------------------------------------------------------------
 # Download the influxDB, chronograf and Grafana
@@ -41,3 +41,14 @@ docker \
     --tag \
     jeroenve/docker-influxdb-grafana:latest \
     .
+
+
+#------------------------------------------------------------------------------
+# Cleanup build dependencies
+#------------------------------------------------------------------------------
+echo ""
+echo "Cleanup build dependencies"
+rm \
+   --force \
+   --recursive \
+   ./*.deb
